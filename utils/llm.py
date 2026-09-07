@@ -11,7 +11,6 @@ def call_llm(system_prompt: str, user_prompt: str) -> str:
     last_error = None
     for attempt in range(LLM_RETRY_ATTEMPTS):
         try:
-            print(f"{attempt + 1} / {LLM_RETRY_ATTEMPTS}")
             response = _client.chat.completions.create(
                 model=GROQ_MODEL,
                 temperature=LLM_TEMPERATURE,
@@ -19,6 +18,9 @@ def call_llm(system_prompt: str, user_prompt: str) -> str:
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_prompt}
                 ],
+                extra_body={
+                    "reasoning_effort": "medium"
+                }
             )
             content = response.choices[0].message.content
             if not content:

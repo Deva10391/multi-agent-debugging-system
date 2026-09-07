@@ -1,4 +1,3 @@
-docker build -t debugger-sandbox:latest -f sandbox/Dockerfile.sandbox .
 python main.py --bug "the code is supposed to reverse a string it gets; it is not doing that; help" --repo ./repo --file repo_file.py
 python main.py --bug "the code is supposed to check if a number is prime; it is not doing that; help" --repo ./repo --file repo_file.py
 python main.py --bug "the code is supposed to sort a list of numbers in ascending order; it is not doing that; help" --repo ./repo --file repo_file.py

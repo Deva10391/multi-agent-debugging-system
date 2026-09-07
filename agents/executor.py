@@ -16,7 +16,6 @@ def extract_code(text: str) -> str:
     return match.group(1).strip() if match else text.strip()
 
 def executor_node(state: BugState) -> dict:
-    print('executing')
     attempt = state.get("attempt", 0)
     branch = create_attempt_branch(state["repo_path"], attempt)
 
@@ -46,7 +45,6 @@ def executor_node(state: BugState) -> dict:
     repo.index.commit(f"attempt {attempt}: {branch}")
 
     passed, output = run_tests_in_sandbox(state['repo_path'])
-    print('execution complete')
 
     return {
         "branch_name": branch,

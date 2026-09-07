@@ -1,5 +1,6 @@
 from state import BugState
 from utils.llm import call_llm
+from config import LLM_RETRY_ATTEMPTS
 
 SYSTEM_PROMPT = """
 as a critic, i need you to help me understanding why the given fix-attempt failed;
@@ -9,9 +10,8 @@ be it precise and actionable as i'll be appending it to strategy-history for the
 """
 
 def critic_node(state: BugState) -> dict:
-    print('criticizing')
     attempt = state.get("attempt", 0)
-    max_attempts = state.get("max_attempts", 5)
+    max_attempts = state.get("max_attempts", LLM_RETRY_ATTEMPTS)
 
     if state.get("test_passed"):
         return {"critic_decision": "accept", "status": "success"}
@@ -31,7 +31,6 @@ def critic_node(state: BugState) -> dict:
         "attempt": attempt + 1,
         "strategy_history": history,
     }
-    print('criticiz-ation complete')
 
     return res
 

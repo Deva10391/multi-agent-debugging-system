@@ -9,8 +9,6 @@ i seek ONLY the diagnosis in plain text + strategy, not any form of code/ diff;
 """
 
 def planner_node(state: BugState) -> dict:
-    print('planning')
-
     history = state.get("strategy_history", [])
     history_text = ("\n".join(f"- {h}" for h in history) if history else "(none yet)")
     user_prompt = f"""
@@ -29,7 +27,6 @@ def planner_node(state: BugState) -> dict:
         "diagnosis": diagnosis,
         "strategy_history": history + [diagnosis],
     }
-    print('planning complete')
 
     return res
 

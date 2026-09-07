@@ -4,7 +4,6 @@ from docker.errors import ContainerError
 from config import DOCKER_IMAGE, SANDBOX_TIMEOUT_SECONDS
 
 def run_tests_in_sandbox(repo_path):
-    print('sandboxing')
 
     client = docker.from_env()
     abs_repo_path = os.path.abspath(repo_path)
@@ -27,8 +26,6 @@ def run_tests_in_sandbox(repo_path):
             passed = False
         finally:
             container.remove(force=True)
-
-        print('sandboxing complete')
         
         return passed, logs
     except ContainerError as e:
