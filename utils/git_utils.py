@@ -1,4 +1,5 @@
 import time
+import os
 from git import Repo
 
 def create_attempt_branch(repo_path: str, attempt: int) -> str:
@@ -12,10 +13,10 @@ def create_attempt_branch(repo_path: str, attempt: int) -> str:
 # trace for diff (unification)
 def apply_patch_and_comit(repo_path: str, patch_diff: str, message: str) -> None:
     repo = Repo(repo_path)
-    patch_file = f"{repo_path}/.debugger_patch.diff"
-    with open(patch_file, "w") as f:
+    patch_file = os.path.join(os.path.abspath(repo_path), ".debugger_patch.diff")
+    with open(patch_file, "w", encoding="utf-8") as f:
         f.write(patch_diff)
-    repo.git.apply("--allow-empty", patch_file)
+    repo.git.apply(patch_file)
     repo.git.add(A=True)
     repo.index.commit(message)
 
@@ -26,5 +27,5 @@ def reset_to_base(repo_path: str, base_branch: str) -> None:
 
 
 """
-
+to save the gen-code
 """

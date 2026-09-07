@@ -1,15 +1,19 @@
+import os
 import docker
 from docker.errors import ContainerError
 from config import DOCKER_IMAGE, SANDBOX_TIMEOUT_SECONDS
 
 def run_tests_in_sandbox(repo_path):
+    print('sandboxing')
+
     client = docker.from_env()
+    abs_repo_path = os.path.abspath(repo_path)
 
     try:
         container = client.containers.run(
             image=DOCKER_IMAGE,
-            command="sh -c 'install -q pytest && pytet -q'",
-            volumes={repo_path: {"bind": "/app", "mode": "rw"}},
+            command=["pytest", "-q"],
+            volumes={abs_repo_path: {"bind": "/app", "mode": "rw"}},
             working_dir="/app",
             detach=True,
             network_disabled=False,
@@ -23,6 +27,9 @@ def run_tests_in_sandbox(repo_path):
             passed = False
         finally:
             container.remove(force=True)
+
+        print('sandboxing complete')
+        
         return passed, logs
     except ContainerError as e:
         return False, str(e)

@@ -64,3 +64,29 @@ Feed it a broken piece of code. It reads the error, guesses a fix, tries it in a
 - Success rate by retry attempt number
 - Average time-to-fix
 - Escalation rate (bugs the system couldn't resolve within retry budget)
+
+<hr>
+
+## To Run
+
+for installation,
+```
+pip install -r requirements.txt
+```
+to run-
+1. open docker.desktop
+2. in cli, run
+```
+docker build -t debugger-sandbox:latest -f sandbox/Dockerfile.sandbox .
+python main.py --bug "the code is supposed to find out factorial of number it gets; it is not doing that" --repo ./repo --file repo_file.py
+```
+you may even change based on your requirement
+
+## To Get Metrics/ Performance
+
+run-
+
+```
+eval_cmds.bat
+python metrics.py
+```
