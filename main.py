@@ -3,14 +3,14 @@ import json
 import time
 from pathlib import Path
 from graph import build_graph
-from config import REPO_PATH, FILE_PATH, MAX_ATTEMPTS
+from config import REPO_PATH, FILE_PATH, MAX_DEBUG_ATTEMPTS
 
 def main():
     parser = argparse.ArgumentParser(description="Multi-Agent Debugging System")
     parser.add_argument("--bug", required=True, help="Description of bug/failure")
     parser.add_argument("--repo", default=REPO_PATH, help="Path to target repo")
     parser.add_argument("--file", default=FILE_PATH, help="Path to file being debugged")
-    parser.add_argument("--max_attempts", type=int,default=MAX_ATTEMPTS,  help="Maximum attempts")
+    parser.add_argument("--max_attempts", type=int,default=MAX_DEBUG_ATTEMPTS,  help="Maximum attempts")
     args = parser.parse_args()
 
     app = build_graph()
@@ -25,7 +25,7 @@ def main():
         "status": "running",
     }
 
-    final_state = app.invoke(initial_states)
+    final_state = app.invoke(initial_states, config={"recursion_limit": 30})
 
     Path("logs").mkdir(exist_ok=True)
     log_path = f"logs/run_{int(time.time())}.json"

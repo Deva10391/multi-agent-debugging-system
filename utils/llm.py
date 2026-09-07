@@ -1,17 +1,17 @@
 import time
 from groq import Groq, RateLimitError
-from config import GROQ_API_KEY, GROQ_MODEL, LLM_TEMPERATURE, MAX_ATTEMPTS
+from config import GROQ_API_KEY, GROQ_MODEL, LLM_TEMPERATURE, LLM_RETRY_ATTEMPTS
 
-_client = Groq(api_key=GROQ_API_KEY)
+_client = Groq(api_key=GROQ_API_KEY, timeout=20.0)
 
 def call_llm(system_prompt: str, user_prompt: str) -> str:
     if not GROQ_API_KEY:
         raise RuntimeError("GROQ_API_KEY not set")
 
     last_error = None
-    for attempt in range(MAX_ATTEMPTS):
+    for attempt in range(LLM_RETRY_ATTEMPTS):
         try:
-            print(f"{attempt + 1} / {MAX_ATTEMPTS}")
+            print(f"{attempt + 1} / {LLM_RETRY_ATTEMPTS}")
             response = _client.chat.completions.create(
                 model=GROQ_MODEL,
                 temperature=LLM_TEMPERATURE,
@@ -29,7 +29,7 @@ def call_llm(system_prompt: str, user_prompt: str) -> str:
                 wait = 5 * (attempt + 1)
                 time.sleep(wait)
     raise RuntimeError(
-         f"call_llm failed after {MAX_ATTEMPTS} due to rate limit and last error was: {last_error}"
+         f"call_llm failed after {LLM_RETRY_ATTEMPTS} due to rate limit and last error was: {last_error}"
     )
 
 """
