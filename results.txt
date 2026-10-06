@@ -1,0 +1,6 @@
+Total runs: 15
+Success rate: 100%
+Escalation rate: 0%
+
+Success rate by attempt count:
+  1 attempts: 15/15 (100%)
