@@ -1,23 +1,21 @@
 # Autonomous Multi-Agent Debugging System
-
-A closed-loop, self-correcting agent pipeline that detects, patches, and verifies fixes to broken code — without blind retries.
-
+ 
 ## Problem
-
-Most "AI coding agent" demos are single-shot: one prompt in, one patch out, no verification. They fail silently when the patch is wrong, and offer no recovery path.
-
+ 
+Single-shot AI code-fix demos give one patch with no verification and no recovery when the patch is wrong.
+ 
 ## Solution
-
-A three-agent loop — **Planner → Executor → Critic** — where every patch is tested inside an isolated sandbox before being accepted. On failure, the Critic diagnoses *why* and routes a new strategy back to the Planner, instead of repeating the same fix blindly. The loop terminates on success or a bounded retry limit.
-
+ 
+A LangGraph loop of three agents: Planner → Executor → Critic. The Executor rewrites the target file on its own scratch git branch and runs the repo's pytest inside a Docker sandbox. The Critic accepts on pass; on fail it writes a 1–3 sentence technical failure reason into the strategy history and routes back to the Planner, which must not repeat failed strategies. The loop stops on success or at the attempt limit (default 3), then escalates.
+ 
 ## Speciality
-
-- Self-correction, not just generation — the rare, interview-defensible differentiator vs. typical "AI writes code" projects.
-- Every accepted patch is machine-verified (tests pass), not just plausible-looking.
-- Produces a hard metric: failure-recovery rate across retries (e.g. 62% → 89% success by attempt 3).
-
+ 
+- Every accepted patch is verified by tests in an isolated container, never on the host.
+- Failure reasons feed the next strategy, so retries are not blind.
+- Each attempt is committed on its own branch (GitPython) and each run is logged to `logs/run_<timestamp>.json`.
+- Measured result (`results.txt`): 15 runs, 100% success, 0% escalation, all fixed on attempt 1.
 ## Architecture
-
+ 
 ```
 Bug report
    │
@@ -37,42 +35,25 @@ Bug report
                        ▼
                  Patch accepted
 ```
-
-## Utilities Used
-
-| Utility | Role |
-|---|---|
-| LangGraph | Orchestrates state machine between Planner / Executor / Critic nodes |
-| Groq API | Low-latency inference for all three agent roles |
-| GitPython | Isolates each attempt on its own scratch branch |
-| Docker | Sandboxes patch execution — never runs untrusted code on host |
-| pytest | Objectively verifies whether a patch actually fixes the bug |
-
-## Non-Functional Requirements
-
-- **Latency:** patch-attempt cycle under 30s
-- **Idempotency:** repeated runs produce consistent results; no host side-effects
-- **Bounded retries:** max 3–5 loop iterations, then escalate to human
-- **Reproducibility:** temperature=0 on judge calls for explainable behavior
-
+ 
 ## Simplified Working
-
-Feed it a broken piece of code. It reads the error, guesses a fix, tries it in a safe sandbox, checks whether the fix actually worked, and — if not — tries a smarter guess instead of repeating the same mistake. Like a junior developer debugging with a senior watching and correcting the approach after every failed attempt.
-
-## Metrics Reported
-
-- Success rate by retry attempt number
-- Average time-to-fix
-- Escalation rate (bugs the system couldn't resolve within retry budget)
-
-<hr>
-
+ 
+You describe a bug and point at a file. It proposes a fix, tests it in a sandbox, and if the test fails it learns why and tries a different fix.
+ 
+## Utilities
+ 
+- LangGraph — state machine across Planner / Executor / Critic
+- Groq API — LLM for all three roles (default `openai/gpt-oss-20b`, temperature 0)
+- GitPython — one branch per attempt
+- Docker — sandboxed test execution (30 s timeout)
+- pytest — pass/fail verdict
+- `metrics.py` — success and escalation rate by attempt count
 ## To Run
-
+ 
 for installation,
 ```
 pip install -r requirements.txt
-
+ 
 mkdir repo && cd repo
 git init -b main
 printf '__pycache__/\n.pytest_cache/\n' > .gitignore
@@ -89,11 +70,11 @@ docker build -t debugger-sandbox:latest -f sandbox/Dockerfile.sandbox .
 python main.py --bug "the code is supposed to find out factorial of number it gets; it is not doing that" --repo ./repo --file repo_file.py
 ```
 you may even change based on your requirement
-
+ 
 ## To Get Metrics/ Performance
-
+ 
 run-
-
+ 
 ```
 chmod +x eval_cmds.sh
 ./eval_cmds.sh
